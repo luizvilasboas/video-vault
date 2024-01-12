@@ -29,6 +29,6 @@ coverage:
     reports:
       coverage_report:
         coverage_format: cobertura
-        cobertura: coverage.xml
+        path: coverage.xml
   tags:
     - golang
