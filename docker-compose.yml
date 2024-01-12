@@ -1,0 +1,11 @@
+version: '3'
+services:
+  postgres:
+    image: "postgres"
+    container_name: "video-vault"
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=videoVault      
+    ports:
+      - "5432:5432"

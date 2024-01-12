@@ -1,0 +1,16 @@
+[build]
+  cmd = "go build -o tmp/go-gin-rest-api main.go"
+  bin = "./tmp/go-gin-rest-api"
+  exclude = ["^assets", "^static", "^templates", "^bin", "^node_modules", "^docker-compose.yml"]
+
+[watcher]
+  dirs = ["./", "!./postgres-data"]
+
+[env]
+  APP_ENV = "development"
+
+[delay]
+  after = 1000
+
+[web]
+  addr = ":8080"
