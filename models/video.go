@@ -1,10 +1,21 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"gopkg.in/validator.v2"
+	"gorm.io/gorm"
+)
 
 type Video struct {
 	gorm.Model
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	URL         string `json:"url"`
+	Title       string `json:"title" validate:"nonzero,nonnil"`
+	Description string `json:"description" validate:"nonnil"`
+	URL         string `json:"url" validate:"nonzero,nonnil"`
+}
+
+func ValidateVideoData(video *Video) error {
+	if err := validator.Validate(video); err != nil {
+		return err
+	}
+
+	return nil
 }
