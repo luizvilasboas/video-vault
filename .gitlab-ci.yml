@@ -21,8 +21,6 @@ test:
 
 coverage:
   stage: test
-  only:
-    - main
   script:
     - go install
     - go test ./... -coverprofile=coverage.txt -covermode count
