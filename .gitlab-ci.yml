@@ -22,16 +22,8 @@ test:
 coverage:
   stage: test
   script:
-    - go install
-    - go test ./... -coverprofile=coverage.txt -covermode count
-    - go get github.com/boumenot/gocover-cobertura
-    - go run github.com/boumenot/gocover-cobertura < coverage.txt > coverage.xml
-  coverage: /^coverage:\s(\d+(?:\.\d+)?%)/
-  artifacts:
-    expire_in: 2 days
-    reports:
-      coverage_report:
-        coverage_format: cobertura
-        path: coverage.xml
+    - go get github.com/kjellkvinge/gocover
+    - go run github.com/kjellkvinge/gocover
+  coverage: /^\s*Total covered: \d+\.\d+%/
   tags:
     - golang
