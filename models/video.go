@@ -8,7 +8,7 @@ import (
 type Video struct {
 	gorm.Model
 	Title       string `json:"title" validate:"nonzero,nonnil"`
-	Description string `json:"description" validate:"nonnil"`
+	Description string `json:"description" validate:"nonzero,nonnil"`
 	URL         string `json:"url" validate:"nonzero,nonnil"`
 }
 
