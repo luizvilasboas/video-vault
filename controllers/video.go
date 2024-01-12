@@ -82,3 +82,24 @@ func UpdateVideo(c *gin.Context) {
 	database.DB.Model(&video).UpdateColumns(video)
 	c.JSON(http.StatusOK, video)
 }
+
+func DeleteVideo(c *gin.Context) {
+	var video models.Video
+	id := c.Param("id")
+	database.DB.First(&video, id)
+
+	if video.ID == 0 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Video not found",
+			"status":  http.StatusNotFound,
+		})
+
+		return
+	}
+
+	database.DB.Delete(&video)
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Video deleted successfully",
+		"status":  http.StatusOK,
+	})
+}
