@@ -55,3 +55,30 @@ func CreateVideo(c *gin.Context) {
 	database.DB.Create(&video)
 	c.JSON(http.StatusOK, video)
 }
+
+func UpdateVideo(c *gin.Context) {
+	var video models.Video
+	id := c.Param("id")
+	database.DB.First(&video, id)
+
+	if err := c.ShouldBindJSON(&video); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+			"status":  http.StatusBadRequest,
+		})
+
+		return
+	}
+
+	if err := models.ValidateVideoData(&video); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+			"status":  http.StatusBadRequest,
+		})
+
+		return
+	}
+
+	database.DB.Model(&video).UpdateColumns(video)
+	c.JSON(http.StatusOK, video)
+}
