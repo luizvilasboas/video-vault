@@ -53,7 +53,7 @@ func CreateVideo(c *gin.Context) {
 	}
 
 	database.DB.Create(&video)
-	c.JSON(http.StatusOK, video)
+	c.JSON(http.StatusCreated, video)
 }
 
 func UpdateVideo(c *gin.Context) {
