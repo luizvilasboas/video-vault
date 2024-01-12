@@ -14,6 +14,23 @@ func GetVideos(c *gin.Context) {
 	c.JSON(http.StatusOK, videos)
 }
 
+func GetVideo(c *gin.Context) {
+	var video models.Video
+	id := c.Param("id")
+	database.DB.First(&video, id)
+
+	if video.ID == 0 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Video not found",
+			"status":  http.StatusNotFound,
+		})
+
+		return
+	}
+
+	c.JSON(http.StatusOK, video)
+}
+
 func CreateVideo(c *gin.Context) {
 	var video models.Video
 
