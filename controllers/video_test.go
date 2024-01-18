@@ -3,6 +3,7 @@ package controllers_test
 import (
 	"bytes"
 	"encoding/json"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -82,7 +83,7 @@ func TestGetVideo(t *testing.T) {
 func TestCreateVideo(t *testing.T) {
 	database.Connect()
 
-	video := models.Video{Title: "Video 3", Description: "Description 3", URL: "http://url3.com"}
+	video := models.Video{Title: "Video 3", Description: "Description 3", URL: "http://url3.com", CategoryID: 1}
 
 	r := SetupTestRoutes()
 	r.POST("/api/v1/videos", controllers.CreateVideo)
@@ -97,6 +98,8 @@ func TestCreateVideo(t *testing.T) {
 	var videoGet models.Video
 	json.Unmarshal(res.Body.Bytes(), &videoGet)
 
+	log.Printf("%v\n", videoGet)
+
 	ID = int(videoGet.ID)
 	defer DeleteVideoMock(videoGet)
 
@@ -109,7 +112,7 @@ func TestCreateVideo(t *testing.T) {
 func TestUpdateVideo(t *testing.T) {
 	database.Connect()
 
-	video := models.Video{Title: "Video 4", Description: "Description 4", URL: "http://url4.com"}
+	video := models.Video{Title: "Video 4", Description: "Description 4", URL: "http://url4.com", CategoryID: 1}
 	CreateVideoMock(video)
 	defer DeleteVideoMock(video)
 

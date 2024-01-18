@@ -12,6 +12,7 @@ func TestValidateVideoValid(t *testing.T) {
 		Title:       "Sample Title",
 		Description: "Sample Description",
 		URL:         "http://example.com",
+		CategoryID:  1,
 	}
 
 	err := models.ValidateVideoData(video)
