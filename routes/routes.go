@@ -15,6 +15,7 @@ func HandleRequests() {
 		v1.POST("/videos", controllers.CreateVideo)
 		v1.PUT("/videos/:id", controllers.UpdateVideo)
 		v1.DELETE("/videos/:id", controllers.DeleteVideo)
+		v1.GET("/videos/?search=:search", controllers.SearchVideos)
 
 		v1.GET("/categories", controllers.GetCategories)
 		v1.GET("/categories/:id", controllers.GetCategory)

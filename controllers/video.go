@@ -103,3 +103,10 @@ func DeleteVideo(c *gin.Context) {
 		"status":  http.StatusOK,
 	})
 }
+
+func SearchVideos(c *gin.Context) {
+	var videos []models.Video
+	query := c.Query("query")
+	database.DB.Where("title LIKE ?", "%"+query+"%").Find(&videos)
+	c.JSON(http.StatusOK, videos)
+}
