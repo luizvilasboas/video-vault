@@ -5,9 +5,6 @@ stages:
 variables:
   GO111MODULE: "on"
 
-before_script:
-  - docker-compose up --force-recreate -d
-
 build:
   stage: build
   script:
@@ -18,6 +15,7 @@ build:
 test:
   stage: test
   script:
+    - docker-compose up --force-recreate -d
     - go test -v ./...
   tags:
     - golang
@@ -25,6 +23,7 @@ test:
 coverage:
   stage: test
   script:
+    - docker-compose up --force-recreate -d
     - go install
     - go test ./... -coverprofile=coverage.txt -covermode count
     - go get github.com/boumenot/gocover-cobertura
