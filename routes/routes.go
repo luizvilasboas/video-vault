@@ -7,10 +7,21 @@ import (
 
 func HandleRequests() {
 	r := gin.Default()
-	r.GET("/api/v1/videos", controllers.GetVideos)
-	r.GET("/api/v1/videos/:id", controllers.GetVideo)
-	r.POST("/api/v1/videos", controllers.CreateVideo)
-	r.PUT("/api/v1/videos/:id", controllers.UpdateVideo)
-	r.DELETE("/api/v1/videos/:id", controllers.DeleteVideo)
+
+	v1 := r.Group("/api/v1")
+	{
+		v1.GET("/videos", controllers.GetVideos)
+		v1.GET("/videos/:id", controllers.GetVideo)
+		v1.POST("/videos", controllers.CreateVideo)
+		v1.PUT("/videos/:id", controllers.UpdateVideo)
+		v1.DELETE("/videos/:id", controllers.DeleteVideo)
+
+		v1.GET("/categories", controllers.GetCategories)
+		v1.GET("/categories/:id", controllers.GetCategory)
+		v1.POST("/categories", controllers.CreateCategory)
+		v1.PUT("categories/:id", controllers.UpdateCategory)
+		v1.DELETE("/categories/:id", controllers.DeleteCategory)
+	}
+
 	r.Run()
 }
