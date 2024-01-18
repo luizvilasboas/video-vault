@@ -94,3 +94,10 @@ func DeleteCategory(c *gin.Context) {
 		"status":  http.StatusOK,
 	})
 }
+
+func GetCategoryVideos(c *gin.Context) {
+	var category models.Category
+	id := c.Param("id")
+	database.DB.Preload("Videos").First(&category, id)
+	c.JSON(http.StatusOK, category.Videos)
+}

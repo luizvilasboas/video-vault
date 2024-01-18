@@ -21,6 +21,7 @@ func HandleRequests() {
 		v1.POST("/categories", controllers.CreateCategory)
 		v1.PUT("categories/:id", controllers.UpdateCategory)
 		v1.DELETE("/categories/:id", controllers.DeleteCategory)
+		v1.GET("/categories/:id/videos", controllers.GetCategoryVideos)
 	}
 
 	r.Run()
