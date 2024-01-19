@@ -11,19 +11,22 @@ build:
     - go build
   tags:
     - golang
+  only:
+    - main
 
 test:
   stage: test
   script:
-    - docker-compose up --force-recreate -d
     - go test -v ./...
   tags:
     - golang
+  only:
+    - merge_requests
+    - main
 
 coverage:
   stage: test
   script:
-    - docker-compose up --force-recreate -d
     - go install
     - go test ./... -coverprofile=coverage.txt -covermode count
     - go get github.com/boumenot/gocover-cobertura
@@ -36,3 +39,5 @@ coverage:
         path: coverage.xml
   tags:
     - golang
+  only:
+    - main
