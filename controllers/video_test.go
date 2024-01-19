@@ -3,7 +3,6 @@ package controllers_test
 import (
 	"bytes"
 	"encoding/json"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -16,31 +15,34 @@ import (
 	"gitlab.com/olooeez/video-vault/models"
 )
 
-var ID int
-
-func SetupTestRoutes() *gin.Engine {
+func SetupTest() *gin.Engine {
+	database.ConnectForTest()
 	gin.SetMode(gin.TestMode)
 	return gin.Default()
 }
 
-func CreateVideoMock(video models.Video) {
-	database.DB.Create(&video)
-	ID = int(video.ID)
+func TeardownTest() {
+	database.CloseForTest()
 }
 
-func DeleteVideoMock(video models.Video) {
-	database.DB.Delete(&video, ID)
+func CreateVideoMock(video models.Video) int {
+	database.DB.Create(&video)
+	return int(video.ID)
+}
+
+func DeleteVideoMock(video models.Video, id int) {
+	database.DB.Delete(&video, id)
 }
 
 func TestGetVideos(t *testing.T) {
-	database.Connect()
+	t.Cleanup(TeardownTest)
+
+	r := SetupTest()
+	r.GET("/api/v1/videos", controllers.GetVideos)
 
 	video := models.Video{Title: "Video 1", Description: "Description 1", URL: "http://url1.com"}
-	CreateVideoMock(video)
-	defer DeleteVideoMock(video)
-
-	r := SetupTestRoutes()
-	r.GET("/api/v1/videos", controllers.GetVideos)
+	id := CreateVideoMock(video)
+	defer DeleteVideoMock(video, id)
 
 	req, _ := http.NewRequest("GET", "/api/v1/videos", nil)
 	res := httptest.NewRecorder()
@@ -48,112 +50,134 @@ func TestGetVideos(t *testing.T) {
 	r.ServeHTTP(res, req)
 
 	var videos []models.Video
-	json.Unmarshal(res.Body.Bytes(), &videos)
+	err := json.Unmarshal(res.Body.Bytes(), &videos)
 
+	assert.Nil(t, err, "error unmarshalling response body")
 	assert.Equal(t, http.StatusOK, res.Code)
-	assert.Equal(t, "Video 1", videos[0].Title)
-	assert.Equal(t, "Description 1", videos[0].Description)
-	assert.Equal(t, "http://url1.com", videos[0].URL)
+
+	var found bool
+	for _, v := range videos {
+		if v.Title == video.Title && v.Description == video.Description && v.URL == video.URL {
+			found = true
+			break
+		}
+	}
+
+	assert.True(t, found, "video not found in response")
 }
 
 func TestGetVideo(t *testing.T) {
-	database.Connect()
+	t.Cleanup(TeardownTest)
 
-	video := models.Video{Title: "Video 2", Description: "Description 2", URL: "http://url2.com"}
-	CreateVideoMock(video)
-	defer DeleteVideoMock(video)
-
-	r := SetupTestRoutes()
+	r := SetupTest()
 	r.GET("/api/v1/videos/:id", controllers.GetVideo)
 
-	req, _ := http.NewRequest("GET", "/api/v1/videos/"+strconv.Itoa(ID), nil)
+	video := models.Video{Title: "Video 2", Description: "Description 2", URL: "http://url2.com"}
+	id := CreateVideoMock(video)
+	defer DeleteVideoMock(video, id)
+
+	url := "/api/v1/videos/" + strconv.Itoa(id)
+	req, _ := http.NewRequest("GET", url, nil)
 	res := httptest.NewRecorder()
 
 	r.ServeHTTP(res, req)
 
-	var videoGet models.Video
-	json.Unmarshal(res.Body.Bytes(), &videoGet)
-
 	assert.Equal(t, http.StatusOK, res.Code)
-	assert.Equal(t, "Video 2", videoGet.Title)
-	assert.Equal(t, "Description 2", videoGet.Description)
-	assert.Equal(t, "http://url2.com", videoGet.URL)
+
+	var videoGet models.Video
+	err := json.Unmarshal(res.Body.Bytes(), &videoGet)
+	assert.Nil(t, err, "error unmarshalling response body")
+
+	assert.Equal(t, video.Title, videoGet.Title)
+	assert.Equal(t, video.Description, videoGet.Description)
+	assert.Equal(t, video.URL, videoGet.URL)
 }
 
 func TestCreateVideo(t *testing.T) {
-	database.Connect()
+	t.Cleanup(TeardownTest)
 
-	video := models.Video{Title: "Video 3", Description: "Description 3", URL: "http://url3.com", CategoryID: 1}
-
-	r := SetupTestRoutes()
+	r := SetupTest()
 	r.POST("/api/v1/videos", controllers.CreateVideo)
 
-	jsonValue, _ := json.Marshal(video)
+	video := models.Video{Title: "Video 3", Description: "Description 3", URL: "http://url3.com", CategoryID: 1}
+	jsonValue, err := json.Marshal(video)
+	assert.Nil(t, err, "error marshalling request body")
 
 	req, _ := http.NewRequest("POST", "/api/v1/videos", bytes.NewBuffer(jsonValue))
+	req.Header.Set("Content-Type", "application/json")
+
 	res := httptest.NewRecorder()
 
 	r.ServeHTTP(res, req)
 
-	var videoGet models.Video
-	json.Unmarshal(res.Body.Bytes(), &videoGet)
-
-	log.Printf("%v\n", videoGet)
-
-	ID = int(videoGet.ID)
-	defer DeleteVideoMock(videoGet)
-
 	assert.Equal(t, http.StatusCreated, res.Code)
-	assert.Equal(t, "Video 3", videoGet.Title)
-	assert.Equal(t, "Description 3", videoGet.Description)
-	assert.Equal(t, "http://url3.com", videoGet.URL)
+
+	var createdVideo models.Video
+	err = json.Unmarshal(res.Body.Bytes(), &createdVideo)
+	assert.Nil(t, err, "error unmarshalling response body")
+
+	assert.Equal(t, video.Title, createdVideo.Title)
+	assert.Equal(t, video.Description, createdVideo.Description)
+	assert.Equal(t, video.URL, createdVideo.URL)
+
+	defer DeleteVideoMock(createdVideo, int(createdVideo.ID))
 }
 
 func TestUpdateVideo(t *testing.T) {
-	database.Connect()
+	t.Cleanup(TeardownTest)
 
-	video := models.Video{Title: "Video 4", Description: "Description 4", URL: "http://url4.com", CategoryID: 1}
-	CreateVideoMock(video)
-	defer DeleteVideoMock(video)
-
-	r := SetupTestRoutes()
+	r := SetupTest()
 	r.PUT("/api/v1/videos/:id", controllers.UpdateVideo)
 
-	video.ID = uint(ID)
-	video.Title = "Video 5"
-	video.Description = "Description 5"
-	video.URL = "http://url5.com"
+	originalVideo := models.Video{Title: "Original Video", Description: "Original Description", URL: "http://original.com", CategoryID: 1}
+	id := CreateVideoMock(originalVideo)
+	defer DeleteVideoMock(originalVideo, id)
 
-	jsonValue, _ := json.Marshal(video)
+	updatedVideo := models.Video{Title: "Updated Video", Description: "Updated Description", URL: "http://updated.com", CategoryID: 1}
+	updatedVideo.ID = uint(id)
 
-	req, _ := http.NewRequest("PUT", "/api/v1/videos/"+strconv.Itoa(ID), bytes.NewBuffer(jsonValue))
+	requestBody, err := json.Marshal(updatedVideo)
+	assert.Nil(t, err, "error marshalling request body")
+
+	url := "/api/v1/videos/" + strconv.Itoa(id)
+
+	req, _ := http.NewRequest("PUT", url, bytes.NewBuffer(requestBody))
+	req.Header.Set("Content-Type", "application/json")
+
 	res := httptest.NewRecorder()
 
 	r.ServeHTTP(res, req)
 
-	var videoGet models.Video
-	json.Unmarshal(res.Body.Bytes(), &videoGet)
-
 	assert.Equal(t, http.StatusOK, res.Code)
-	assert.Equal(t, "Video 5", videoGet.Title)
-	assert.Equal(t, "Description 5", videoGet.Description)
-	assert.Equal(t, "http://url5.com", videoGet.URL)
+
+	updatedVideoFromDB := models.Video{}
+	database.DB.First(&updatedVideoFromDB, id)
+
+	assert.Equal(t, updatedVideo.Title, updatedVideoFromDB.Title)
+	assert.Equal(t, updatedVideo.Description, updatedVideoFromDB.Description)
+	assert.Equal(t, updatedVideo.URL, updatedVideoFromDB.URL)
 }
 
 func TestDeleteVideo(t *testing.T) {
-	database.Connect()
+	t.Cleanup(TeardownTest)
 
-	video := models.Video{Title: "Video 6", Description: "Description 6", URL: "http://url6.com"}
-	CreateVideoMock(video)
-
-	r := SetupTestRoutes()
+	r := SetupTest()
 	r.DELETE("/api/v1/videos/:id", controllers.DeleteVideo)
 
-	req, _ := http.NewRequest("DELETE", "/api/v1/videos/"+strconv.Itoa(ID), nil)
+	videoToDelete := models.Video{Title: "Video to delete", Description: "Description to delete", URL: "http://delete.com"}
+	id := CreateVideoMock(videoToDelete)
+
+	url := "/api/v1/videos/" + strconv.Itoa(id)
+	req, _ := http.NewRequest("DELETE", url, nil)
+
 	res := httptest.NewRecorder()
 
 	r.ServeHTTP(res, req)
 
 	assert.Equal(t, http.StatusOK, res.Code)
-	assert.Contains(t, res.Body.String(), "Video deleted successfully")
+
+	deletedVideoFromDB := models.Video{}
+	database.DB.First(&deletedVideoFromDB, id)
+
+	assert.Equal(t, uint(0), deletedVideoFromDB.ID)
 }

@@ -17,14 +17,9 @@ func GetCategories(c *gin.Context) {
 func GetCategory(c *gin.Context) {
 	var category models.Category
 	id := c.Param("id")
-	database.DB.Preload("Videos").First(&category, id)
 
-	if category.ID == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Category not found",
-			"status":  http.StatusNotFound,
-		})
-
+	if err := database.DB.Preload("Videos").First(&category, id).Error; err != nil {
+		handleNotFoundError(c, "Category not found")
 		return
 	}
 
@@ -35,11 +30,7 @@ func CreateCategory(c *gin.Context) {
 	var category models.Category
 
 	if err := c.ShouldBindJSON(&category); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":  err.Error(),
-			"status": http.StatusBadRequest,
-		})
-
+		handleBadRequest(c, err)
 		return
 	}
 
@@ -50,41 +41,32 @@ func CreateCategory(c *gin.Context) {
 func UpdateCategory(c *gin.Context) {
 	var category models.Category
 	id := c.Param("id")
-	database.DB.First(&category, id)
+
+	if err := database.DB.First(&category, id).Error; err != nil {
+		handleNotFoundError(c, "Category not found")
+		return
+	}
 
 	if err := c.ShouldBindJSON(&category); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": err.Error(),
-			"status":  http.StatusBadRequest,
-		})
-
+		handleBadRequest(c, err)
 		return
 	}
 
 	if err := models.ValidateCategoryData(&category); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": err.Error(),
-			"status":  http.StatusBadRequest,
-		})
-
+		handleBadRequest(c, err)
 		return
 	}
 
-	database.DB.Model(&category).UpdateColumns(category)
+	database.DB.Save(&category)
 	c.JSON(http.StatusOK, category)
 }
 
 func DeleteCategory(c *gin.Context) {
 	var category models.Category
 	id := c.Param("id")
-	database.DB.First(&category, id)
 
-	if category.ID == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Category not found",
-			"status":  http.StatusNotFound,
-		})
-
+	if err := database.DB.First(&category, id).Error; err != nil {
+		handleNotFoundError(c, "Category not found")
 		return
 	}
 
@@ -98,6 +80,25 @@ func DeleteCategory(c *gin.Context) {
 func GetCategoryVideos(c *gin.Context) {
 	var category models.Category
 	id := c.Param("id")
-	database.DB.Preload("Videos").First(&category, id)
+
+	if err := database.DB.Preload("Videos").First(&category, id).Error; err != nil {
+		handleNotFoundError(c, "Category not found")
+		return
+	}
+
 	c.JSON(http.StatusOK, category.Videos)
+}
+
+func handleBadRequest(c *gin.Context, err error) {
+	c.JSON(http.StatusBadRequest, gin.H{
+		"message": err.Error(),
+		"status":  http.StatusBadRequest,
+	})
+}
+
+func handleNotFoundError(c *gin.Context, message string) {
+	c.JSON(http.StatusNotFound, gin.H{
+		"message": message,
+		"status":  http.StatusNotFound,
+	})
 }

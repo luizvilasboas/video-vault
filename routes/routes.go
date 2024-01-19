@@ -5,25 +5,36 @@ import (
 	"gitlab.com/olooeez/video-vault/controllers"
 )
 
-func HandleRequests() {
+func SetupRouter() *gin.Engine {
 	r := gin.Default()
 
 	v1 := r.Group("/api/v1")
 	{
-		v1.GET("/videos", controllers.GetVideos)
-		v1.GET("/videos/:id", controllers.GetVideo)
-		v1.POST("/videos", controllers.CreateVideo)
-		v1.PUT("/videos/:id", controllers.UpdateVideo)
-		v1.DELETE("/videos/:id", controllers.DeleteVideo)
-		v1.GET("/videos/?search=:search", controllers.SearchVideos)
+		videos := v1.Group("/videos")
+		{
+			videos.GET("", controllers.GetVideos)
+			videos.GET("/:id", controllers.GetVideo)
+			videos.POST("", controllers.CreateVideo)
+			videos.PUT("/:id", controllers.UpdateVideo)
+			videos.DELETE("/:id", controllers.DeleteVideo)
+			videos.GET("/search", controllers.SearchVideos)
+		}
 
-		v1.GET("/categories", controllers.GetCategories)
-		v1.GET("/categories/:id", controllers.GetCategory)
-		v1.POST("/categories", controllers.CreateCategory)
-		v1.PUT("/categories/:id", controllers.UpdateCategory)
-		v1.DELETE("/categories/:id", controllers.DeleteCategory)
-		v1.GET("/categories/:id/videos", controllers.GetCategoryVideos)
+		categories := v1.Group("/categories")
+		{
+			categories.GET("", controllers.GetCategories)
+			categories.GET("/:id", controllers.GetCategory)
+			categories.POST("", controllers.CreateCategory)
+			categories.PUT("/:id", controllers.UpdateCategory)
+			categories.DELETE("/:id", controllers.DeleteCategory)
+			categories.GET("/:id/videos", controllers.GetCategoryVideos)
+		}
 	}
 
+	return r
+}
+
+func StartServer() {
+	r := SetupRouter()
 	r.Run()
 }

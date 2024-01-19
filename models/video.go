@@ -14,9 +14,5 @@ type Video struct {
 }
 
 func ValidateVideoData(video *Video) error {
-	if err := validator.Validate(video); err != nil {
-		return err
-	}
-
-	return nil
+	return validator.Validate(video)
 }

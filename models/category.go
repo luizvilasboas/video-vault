@@ -1,6 +1,8 @@
 package models
 
 import (
+	"fmt"
+
 	"gopkg.in/validator.v2"
 	"gorm.io/gorm"
 )
@@ -15,16 +17,15 @@ type Category struct {
 func (c *Category) BeforeDelete(tx *gorm.DB) (err error) {
 	var videos []Video
 
-	tx.Model(&c).Association("Videos").Find(&videos)
+	if err := tx.Model(&c).Association("Videos").Find(&videos); err != nil {
+		return fmt.Errorf("erro ao buscar vídeos associados à categoria: %v", err)
+	}
+
 	tx.Model(&videos).Update("CategoryID", 1)
 
 	return nil
 }
 
 func ValidateCategoryData(category *Category) error {
-	if err := validator.Validate(category); err != nil {
-		return err
-	}
-
-	return nil
+	return validator.Validate(category)
 }

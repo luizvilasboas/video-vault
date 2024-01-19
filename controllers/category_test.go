@@ -14,9 +14,14 @@ import (
 	"gitlab.com/olooeez/video-vault/models"
 )
 
-func SetupTestRoutes() *gin.Engine {
+func SetupTest() *gin.Engine {
+	database.ConnectForTest()
 	gin.SetMode(gin.TestMode)
 	return gin.Default()
+}
+
+func TeardownTest() {
+	database.CloseForTest()
 }
 
 func CreateCategoryMock(category models.Category) int {
@@ -29,14 +34,14 @@ func DeleteCategoryMock(category models.Category, id int) {
 }
 
 func TestGetCategories(t *testing.T) {
-	database.Connect()
+	t.Cleanup(TeardownTest)
+
+	r := SetupTest()
+	r.GET("/api/v1/categories", GetCategories)
 
 	category := models.Category{Title: "Category 1", Color: "#FFF"}
 	id := CreateCategoryMock(category)
 	defer DeleteCategoryMock(category, id)
-
-	r := SetupTestRoutes()
-	r.GET("/api/v1/categories", GetCategories)
 
 	req, _ := http.NewRequest("GET", "/api/v1/categories", nil)
 	res := httptest.NewRecorder()
@@ -46,11 +51,10 @@ func TestGetCategories(t *testing.T) {
 	var categories []models.Category
 	err := json.Unmarshal(res.Body.Bytes(), &categories)
 
-	assert.Nil(t, err, "Error unmarshalling response body")
+	assert.Nil(t, err, "error unmarshalling response body")
 	assert.Equal(t, http.StatusOK, res.Code)
 
 	var found bool
-
 	for _, c := range categories {
 		if c.Title == category.Title && c.Color == category.Color {
 			found = true
@@ -58,18 +62,18 @@ func TestGetCategories(t *testing.T) {
 		}
 	}
 
-	assert.True(t, found, "Expected category not found in the response")
+	assert.True(t, found, "category not found in the response")
 }
 
 func TestGetCategory(t *testing.T) {
-	database.Connect()
+	t.Cleanup(TeardownTest)
+
+	r := SetupTest()
+	r.GET("/api/v1/categories/:id", GetCategory)
 
 	category := models.Category{Title: "Test Category", Color: "#ABC"}
 	id := CreateCategoryMock(category)
 	defer DeleteCategoryMock(category, id)
-
-	r := SetupTestRoutes()
-	r.GET("/api/v1/categories/:id", GetCategory)
 
 	url := "/api/v1/categories/" + strconv.Itoa(id)
 	req, _ := http.NewRequest("GET", url, nil)
@@ -81,22 +85,21 @@ func TestGetCategory(t *testing.T) {
 
 	var retrievedCategory models.Category
 	err := json.Unmarshal(res.Body.Bytes(), &retrievedCategory)
-	assert.Nil(t, err, "Error unmarshalling response body")
+	assert.Nil(t, err, "error unmarshalling response body")
 
 	assert.Equal(t, category.Title, retrievedCategory.Title)
 	assert.Equal(t, category.Color, retrievedCategory.Color)
 }
 
 func TestCreateCategory(t *testing.T) {
-	database.Connect()
+	t.Cleanup(TeardownTest)
 
-	newCategory := models.Category{Title: "New Category", Color: "#123"}
-
-	r := SetupTestRoutes()
+	r := SetupTest()
 	r.POST("/api/v1/categories", CreateCategory)
 
+	newCategory := models.Category{Title: "New Category", Color: "#123"}
 	requestBody, err := json.Marshal(newCategory)
-	assert.Nil(t, err, "Error marshalling request body")
+	assert.Nil(t, err, "error marshalling request body")
 
 	req, _ := http.NewRequest("POST", "/api/v1/categories", bytes.NewBuffer(requestBody))
 	req.Header.Set("Content-Type", "application/json")
@@ -109,7 +112,7 @@ func TestCreateCategory(t *testing.T) {
 
 	var createdCategory models.Category
 	err = json.Unmarshal(res.Body.Bytes(), &createdCategory)
-	assert.Nil(t, err, "Error unmarshalling response body")
+	assert.Nil(t, err, "error unmarshalling response body")
 
 	assert.Equal(t, newCategory.Title, createdCategory.Title)
 	assert.Equal(t, newCategory.Color, createdCategory.Color)
@@ -118,7 +121,10 @@ func TestCreateCategory(t *testing.T) {
 }
 
 func TestUpdateCategory(t *testing.T) {
-	database.Connect()
+	t.Cleanup(TeardownTest)
+
+	r := SetupTest()
+	r.PUT("/api/v1/categories/:id", UpdateCategory)
 
 	originalCategory := models.Category{Title: "Original Category", Color: "#999"}
 	id := CreateCategoryMock(originalCategory)
@@ -126,9 +132,6 @@ func TestUpdateCategory(t *testing.T) {
 
 	updatedCategory := models.Category{Title: "Updated Category", Color: "#456"}
 	updatedCategory.ID = uint(id)
-
-	r := SetupTestRoutes()
-	r.PUT("/api/v1/categories/:id", UpdateCategory)
 
 	requestBody, err := json.Marshal(updatedCategory)
 	assert.Nil(t, err, "Error marshalling request body")
@@ -152,13 +155,13 @@ func TestUpdateCategory(t *testing.T) {
 }
 
 func TestDeleteCategory(t *testing.T) {
-	database.Connect()
+	t.Cleanup(TeardownTest)
+
+	r := SetupTest()
+	r.DELETE("/api/v1/categories/:id", DeleteCategory)
 
 	categoryToDelete := models.Category{Title: "Category to Delete", Color: "#777"}
 	id := CreateCategoryMock(categoryToDelete)
-
-	r := SetupTestRoutes()
-	r.DELETE("/api/v1/categories/:id", DeleteCategory)
 
 	url := "/api/v1/categories/" + strconv.Itoa(id)
 	req, _ := http.NewRequest("DELETE", url, nil)
@@ -176,7 +179,10 @@ func TestDeleteCategory(t *testing.T) {
 }
 
 func TestGetCategoryVideos(t *testing.T) {
-	database.Connect()
+	t.Cleanup(TeardownTest)
+
+	r := SetupTest()
+	r.GET("/api/v1/categories/:id/videos", GetCategoryVideos)
 
 	category := models.Category{Title: "Category with Videos", Color: "#555"}
 	categoryID := CreateCategoryMock(category)
@@ -189,9 +195,6 @@ func TestGetCategoryVideos(t *testing.T) {
 	database.DB.Create(&video2)
 	defer database.DB.Delete(&video1, video1.ID)
 	defer database.DB.Delete(&video2, video2.ID)
-
-	r := SetupTestRoutes()
-	r.GET("/api/v1/categories/:id/videos", GetCategoryVideos)
 
 	url := "/api/v1/categories/" + strconv.Itoa(categoryID) + "/videos"
 	req, _ := http.NewRequest("GET", url, nil)

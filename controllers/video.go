@@ -15,16 +15,9 @@ func GetVideos(c *gin.Context) {
 }
 
 func GetVideo(c *gin.Context) {
-	var video models.Video
-	id := c.Param("id")
-	database.DB.First(&video, id)
-
-	if video.ID == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Video not found",
-			"status":  http.StatusNotFound,
-		})
-
+	video, err := findVideoByID(c)
+	if err != nil {
+		handleNotFoundError(c, "Video not found")
 		return
 	}
 
@@ -35,20 +28,12 @@ func CreateVideo(c *gin.Context) {
 	var video models.Video
 
 	if err := c.ShouldBindJSON(&video); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": err.Error(),
-			"status":  http.StatusBadRequest,
-		})
-
+		handleBadRequest(c, err)
 		return
 	}
 
 	if err := models.ValidateVideoData(&video); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": err.Error(),
-			"status":  http.StatusBadRequest,
-		})
-
+		handleBadRequest(c, err)
 		return
 	}
 
@@ -57,43 +42,30 @@ func CreateVideo(c *gin.Context) {
 }
 
 func UpdateVideo(c *gin.Context) {
-	var video models.Video
-	id := c.Param("id")
-	database.DB.First(&video, id)
+	video, err := findVideoByID(c)
+	if err != nil {
+		handleNotFoundError(c, "Video not found")
+		return
+	}
 
 	if err := c.ShouldBindJSON(&video); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": err.Error(),
-			"status":  http.StatusBadRequest,
-		})
-
+		handleBadRequest(c, err)
 		return
 	}
 
 	if err := models.ValidateVideoData(&video); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": err.Error(),
-			"status":  http.StatusBadRequest,
-		})
-
+		handleBadRequest(c, err)
 		return
 	}
 
-	database.DB.Model(&video).UpdateColumns(video)
+	database.DB.Save(&video)
 	c.JSON(http.StatusOK, video)
 }
 
 func DeleteVideo(c *gin.Context) {
-	var video models.Video
-	id := c.Param("id")
-	database.DB.First(&video, id)
-
-	if video.ID == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Video not found",
-			"status":  http.StatusNotFound,
-		})
-
+	video, err := findVideoByID(c)
+	if err != nil {
+		handleNotFoundError(c, "Video not found")
 		return
 	}
 
@@ -109,4 +81,11 @@ func SearchVideos(c *gin.Context) {
 	query := c.Query("query")
 	database.DB.Where("title LIKE ?", "%"+query+"%").Find(&videos)
 	c.JSON(http.StatusOK, videos)
+}
+
+func findVideoByID(c *gin.Context) (models.Video, error) {
+	var video models.Video
+	id := c.Param("id")
+	err := database.DB.First(&video, id).Error
+	return video, err
 }

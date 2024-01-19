@@ -7,5 +7,5 @@ import (
 
 func main() {
 	database.Connect()
-	routes.HandleRequests()
+	routes.StartServer()
 }
