@@ -1,7 +1,6 @@
 package database
 
 import (
-	"fmt"
 	"log"
 	"time"
 
@@ -24,12 +23,12 @@ func Connect() {
 	})
 
 	if err != nil {
-		log.Fatalf("erro ao conectar ao banco de dados: %v", err)
+		log.Fatalf("error while connecting to the database: %v", err)
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		log.Fatalf("erro ao obter o objeto DB: %v", err)
+		log.Fatalf("error while geting DB object: %v", err)
 	}
 
 	sqlDB.SetMaxOpenConns(10)
@@ -37,7 +36,7 @@ func Connect() {
 	sqlDB.SetConnMaxLifetime(time.Minute * 5)
 
 	if err := runMigrations(db); err != nil {
-		log.Fatalf("erro ao executar as migrações: %v", err)
+		log.Fatalf("error while migrating: %v", err)
 	}
 
 	baseConfig(db)
@@ -49,11 +48,11 @@ func ConnectForTest() {
 	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
 
 	if err != nil {
-		log.Fatalf("erro ao conectar ao banco de dados: %v", err)
+		log.Fatalf("error while connecting to the database: %v", err)
 	}
 
 	if err := runMigrations(db); err != nil {
-		log.Fatalf("erro ao executar as migrações: %v", err)
+		log.Fatalf("error while migrating: %v", err)
 	}
 
 	baseConfig(db)
@@ -74,10 +73,7 @@ func CloseForTest() {
 }
 
 func runMigrations(db *gorm.DB) error {
-	if err := db.AutoMigrate(&models.Video{}, &models.Category{}); err != nil {
-		return fmt.Errorf("erro ao realizar migrações: %v", err)
-	}
-	return nil
+	return db.AutoMigrate(&models.Video{}, &models.Category{})
 }
 
 func baseConfig(db *gorm.DB) {
@@ -85,6 +81,6 @@ func baseConfig(db *gorm.DB) {
 		Title: "Livre",
 		Color: "#FFF",
 	}).Error; err != nil {
-		log.Fatalf("Erro ao criar ou obter categoria padrão: %v", err)
+		log.Fatalf("error while creating base category: %v", err)
 	}
 }

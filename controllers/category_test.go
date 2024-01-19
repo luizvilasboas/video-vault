@@ -134,7 +134,7 @@ func TestUpdateCategory(t *testing.T) {
 	updatedCategory.ID = uint(id)
 
 	requestBody, err := json.Marshal(updatedCategory)
-	assert.Nil(t, err, "Error marshalling request body")
+	assert.Nil(t, err, "error marshalling request body")
 
 	url := "/api/v1/categories/" + strconv.Itoa(id)
 
@@ -206,7 +206,7 @@ func TestGetCategoryVideos(t *testing.T) {
 
 	var videos []models.Video
 	err := json.Unmarshal(res.Body.Bytes(), &videos)
-	assert.Nil(t, err, "Error unmarshalling response body")
+	assert.Nil(t, err, "error unmarshalling response body")
 
 	for _, v := range videos {
 		assert.Equal(t, uint(categoryID), v.CategoryID)

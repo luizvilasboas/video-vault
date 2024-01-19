@@ -32,8 +32,8 @@ func TestValidateVideoInvalid(t *testing.T) {
 
 		err := models.ValidateVideoData(video)
 
-		assert.Error(t, err, "Validation error expected for a video with missing title")
-		assert.Contains(t, err.Error(), "Title", "Error message should mention the missing Title field")
+		assert.Error(t, err, "validation error expected for a video with missing title")
+		assert.Contains(t, err.Error(), "Title", "error message should mention the missing Title field")
 	})
 
 	t.Run("Invalid Video - Missing URL", func(t *testing.T) {
@@ -45,8 +45,8 @@ func TestValidateVideoInvalid(t *testing.T) {
 
 		err := models.ValidateVideoData(video)
 
-		assert.Error(t, err, "Validation error expected for a video with missing URL")
-		assert.Contains(t, err.Error(), "URL", "Error message should mention the missing URL field")
+		assert.Error(t, err, "validation error expected for a video with missing URL")
+		assert.Contains(t, err.Error(), "URL", "error message should mention the missing URL field")
 	})
 
 	t.Run("Invalid Video - Missing CategoryID", func(t *testing.T) {
@@ -58,7 +58,7 @@ func TestValidateVideoInvalid(t *testing.T) {
 
 		err := models.ValidateVideoData(video)
 
-		assert.Error(t, err, "Validation error expected for a video with missing CategoryID")
-		assert.Contains(t, err.Error(), "CategoryID", "Error message should mention the missing CategoryID field")
+		assert.Error(t, err, "validation error expected for a video with missing CategoryID")
+		assert.Contains(t, err.Error(), "CategoryID", "error message should mention the missing CategoryID field")
 	})
 }
