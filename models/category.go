@@ -7,8 +7,8 @@ import (
 
 type Category struct {
 	gorm.Model
-	Title  string  `json:"title" validator:"nonzero,nonnil"`
-	Color  string  `json:"color" validator:"nonzero,nonnil"`
+	Title  string  `json:"title" validate:"nonzero,nonnil"`
+	Color  string  `json:"color" validate:"nonzero,nonnil"`
 	Videos []Video `json:"videos"`
 }
 
