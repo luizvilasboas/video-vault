@@ -20,8 +20,8 @@ This RESTful API is built using Go and the Gin framework, providing a plataform 
 
 Make sure you have the following installed:
 
-- [Go](https://golang.org/dl/)
-- [Gin](https://github.com/gin-gonic/gin) - Golang web framework
+- [Go](https://golang.org/dl/) - Go programming language
+- [Gin](https://github.com/gin-gonic/gin) - Go web framework
 
 ### Installation
 
