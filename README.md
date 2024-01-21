@@ -44,9 +44,10 @@ Make sure you have the following installed:
    ```
 
 4. Set up your database and configure the database connection with `Docker Compose`:
-  ```
-  docker-compose up -d
-  ```
+
+   ```
+   docker-compose up -d
+   ```
 
 5. Run the application:
 
