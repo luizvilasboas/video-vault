@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"gitlab.com/olooeez/video-vault/database"
@@ -9,8 +11,18 @@ import (
 )
 
 func GetCategories(c *gin.Context) {
+	pageStr := c.DefaultQuery("page", "1")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		handleBadRequest(c, errors.New("invalid page number"))
+		return
+	}
+
+	videosPerPage := 10
+	offset := (page - 1) * videosPerPage
+
 	var categories []models.Category
-	database.DB.Preload("Videos").Find(&categories)
+	database.DB.Offset(offset).Limit(videosPerPage).Preload("Videos").Find(&categories)
 	c.JSON(http.StatusOK, categories)
 }
 

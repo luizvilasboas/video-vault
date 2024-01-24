@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"gitlab.com/olooeez/video-vault/database"
@@ -9,8 +11,19 @@ import (
 )
 
 func GetVideos(c *gin.Context) {
+	pageStr := c.DefaultQuery("page", "1")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		handleBadRequest(c, errors.New("invalid page number"))
+		return
+	}
+
+	videosPerPage := 10
+	offset := (page - 1) * videosPerPage
+
 	var videos []models.Video
-	database.DB.Find(&videos)
+	database.DB.Offset(offset).Limit(videosPerPage).Find(&videos)
+
 	c.JSON(http.StatusOK, videos)
 }
 
