@@ -28,7 +28,7 @@ Make sure you have the following installed:
 1. Clone the repository:
 
    ```
-   git clone https://gitlab.com/olooeez/video-vault.git
+   git clone https://github.com/luizvilasboas/video-vault.git
    ```
 
 2. Navigate to the project directory:
@@ -63,4 +63,4 @@ If you wish to contribute to this project, feel free to open a merge request. We
 
 ## License
 
-This project is licensed under the [MIT License](https://gitlab.com/olooeez/video-vault/-/blob/main/LICENSE). Refer to the LICENSE file for more details.
+This project is licensed under the [MIT License](https://github.com/luizvilasboas/video-vault/blob/main/LICENSE). Refer to the LICENSE file for more details.
