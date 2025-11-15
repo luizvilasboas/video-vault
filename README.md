@@ -1,66 +1,74 @@
-#  video-vault
+# video-vault
 
-This RESTful API is built using Go and the Gin framework, providing a plataform for managing your saved videos in one place. 
+> A RESTful API built with Go and the Gin framework for managing a personal collection of saved videos.
 
-## Features
+## About the Project
 
-- **User Authentication:** Secure your platform with user authentication to ensure that only authorized users can access and manage their saved videos.
+Video Vault provides a backend platform for managing your saved videos in one place. It allows for secure user authentication, video management, and organization through tags.
 
-- **Video CRUD Operations:** Perform CRUD (Create, Read, Update, Delete) operations on saved videos. Add new videos, retrieve video details, update video information, and delete unwanted videos.
+Key features include:
+*   **User Authentication:** Secure your platform with user authentication to ensure only authorized users can access and manage their content.
+*   **Video CRUD Operations:** Perform Create, Read, Update, and Delete operations on saved videos.
+*   **Tagging System:** Create and assign tags to videos for better categorization and filtering.
+*   **Search and Filters:** Implement powerful search and filtering capabilities to help users find specific videos quickly.
+*   **Authorization and Permissions:** Control access to various API endpoints based on user roles and permissions.
 
-- **Search and Filters:** Implement powerful search and filtering capabilities to help users find specific videos quickly.
+## Tech Stack
 
-- **Authorization and Permissions:** Control access to various API endpoints based on user roles and permissions.
-
-- **Create and set tags:** Create and set tags to various videos to better categorize them.
+*   [Go](https://golang.org/)
+*   [Gin](https://gin-gonic.com/)
+*   [Docker Compose](https://docs.docker.com/compose/) (for database setup)
 
 ## Usage
 
+Below are the instructions for you to set up and run the project locally.
+
 ### Prerequisites
 
-Make sure you have the following installed:
+You need to have the following software installed:
 
-- [Go](https://golang.org/dl/) - Go programming language
-- [Gin](https://github.com/gin-gonic/gin) - Go web framework
+*   [Go](https://golang.org/dl/)
+*   [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/)
 
-### Installation
+### Installation and Setup
 
-1. Clone the repository:
+Follow the steps below:
 
-   ```
-   git clone https://github.com/luizvilasboas/video-vault.git
-   ```
+1.  **Clone the repository**
+    ```bash
+    git clone https://github.com/luizvilasboas/video-vault.git
+    ```
 
-2. Navigate to the project directory:
+2.  **Navigate to the project directory**
+    ```bash
+    cd video-vault
+    ```
 
-   ```
-   cd video-vault
-   ```
+3.  **Install Go dependencies**
+    ```bash
+    go mod tidy
+    ```
 
-3. Install dependencies:
+4.  **Set up the database**
+    Start the required database service using Docker Compose.
+    ```bash
+    docker-compose up -d
+    ```
 
-   ```
-   go mod tidy
-   ```
+### Workflow
 
-4. Set up your database and configure the database connection with `Docker Compose`:
-
-   ```
-   docker-compose up -d
-   ```
-
-5. Run the application:
-
-   ```
-   go run main.go
-   ```
-
+To run the application server, execute the following command:
+```bash
+go run main.go
+```
 By default, the API will be accessible at `http://localhost:8080`.
 
 ## Contributing
 
-If you wish to contribute to this project, feel free to open a merge request. We welcome all forms of contribution!
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+If you have a suggestion that would make this better, please fork the repo and create a pull request.
 
 ## License
 
-This project is licensed under the [MIT License](https://github.com/luizvilasboas/video-vault/blob/main/LICENSE). Refer to the LICENSE file for more details.
+This project is licensed under the MIT License. See the `LICENSE` file for details.
